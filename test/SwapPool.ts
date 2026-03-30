@@ -24,7 +24,7 @@ describe("SwapPool", () => {
     await token.mint(owner.address, 1, 10000);
     
     const SwapPool = await ethers.getContractFactory("SwapPool");
-    swapPool = await SwapPool.deploy(await token.getAddress(), await registry.getAddress());
+    swapPool = await SwapPool.deploy(await token.getAddress(), await registry.getAddress(), owner.address);
     
     await token.setApprovalForAll(await swapPool.getAddress(), true);
     await swapPool.createPool(0, 1, 5000, 5000);
@@ -90,13 +90,14 @@ describe("SwapPool", () => {
     });
 
     it("should emit Swapped event", async () => {
-      const tx = await swapPool.swap(0, 1, 100, 1);
+      const tx = await swapPool.swap(0, 1, 1000, 1);
       const receipt = await tx.wait();
       
       const event = receipt.logs.find((log: any) => log.eventName === "Swapped");
       expect(event).to.exist;
       expect(event.args.fromBrand).to.equal(0);
       expect(event.args.toBrand).to.equal(1);
+      expect(event.args.feeAmount).to.be.gt(0);
     });
 
     it("should revert if slippage exceeded", async () => {

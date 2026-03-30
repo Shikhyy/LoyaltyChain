@@ -1,326 +1,190 @@
 <div align="center">
 
-# 🔗 LoyaltyChain
+# 🔗 LoyaltyChain Protocol
 
-### Tokenizing Loyalty Points on BNB Chain
+### The Global Liquidity Layer for Loyalty Points & RWAs
+**Tokenizing $300B+ of unredeemed loyalty value on BNB Chain**
 
-<p align="center">
-  <img src="https://img.shields.io/badge/BNB-Chain-10B981?style=for-the-badge&logo=binance&color=10B981" alt="BNB Chain">
-  <img src="https://img.shields.io/badge/Solidity-0.8.25-363636?style=for-the-badge&logo=solidity&color=363636" alt="Solidity">
-  <img src="https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&color=000000" alt="Next.js">
-  <img src="https://img.shields.io/badge/wagmi-v2-FF6A1A?style=for-the-badge&color=FF6A1A" alt="wagmi">
-  <img src="https://img.shields.io/badge/Hackathon-RWA%20Demo%20Day-purple?style=for-the-badge&color=purple" alt="RWA Demo Day">
-</p>
+[![BNB Chain](https://img.shields.io/badge/BNB%20Chain-Testnet-10B981?style=for-the-badge&logo=binance&logoColor=white)](https://opbnb.bnbchain.org/)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.25-363636?style=for-the-badge&logo=solidity)](https://soliditylang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-**Convert siloed airline miles, hotel points, and retail rewards into freely tradeable ERC-1155 tokens on BNB Chain**
-
----
-
-## 📊 The Problem
-
-<div align="left">
-
-| Statistic | Value |
-|-----------|-------|
-| Global unredeemed loyalty points | **$300B+** |
-| Points that go unused annually | **30 trillion** |
-| Average expiry rate | **25-30%** |
-| Secondary market availability | **None** |
-
-</div>
-
-### Current Issues:
-- Points are locked to a single brand with no transferability
-- Silent expiration loses users millions yearly  
-- No way to swap Airtel → MakeMyTrip miles
-- Cannot sell points for stablecoins
-
----
-
-## 💡 Our Solution
-
-LoyaltyChain tokenizes loyalty points as on-chain RWA tokens:
-
-```mermaid
-graph LR
-    A[Airline Miles] -->|Mint| B(ERC-1155 Token)
-    C[Hotel Points] -->|Mint| B
-    D[Retail Rewards] -->|Mint| B
-    
-    B --> E[User Wallet]
-    E --> F[Swap Pool AMM]
-    F --> G[Cross-Brand Swap]
-    E --> H[Redemption]
-    H --> I[Burn + Get Code]
-```
-
-### How It Works:
-1. **Brand Operators** mint their points as ERC-1155 tokens (1 token = 100 miles)
-2. **Users** hold tokens in any BNB Chain wallet
-3. **Cross-brand swaps** via on-chain AMM-style pool
-4. **Redemption** burns tokens and emits redemption event
-
----
-
-## 🏗️ Architecture
-
-### System Overview
-
-```mermaid
-flowchart TB
-    subgraph Frontend["Frontend (Next.js)"]
-        UI1[Dashboard]
-        UI2[Swap UI]
-        UI3[Redeem Modal]
-        UI4[Admin Panel]
-    end
-    
-    subgraph Blockchain["BNB Chain (BSC Testnet)"]
-        WC[wagmi / viem]
-        
-        subgraph Contracts["Smart Contracts"]
-            RT[LoyaltyToken.sol]
-            SP[SwapPool.sol]
-            RG[LoyaltyRegistry.sol]
-        end
-    end
-    
-    UI1 --> WC
-    UI2 --> WC
-    UI3 --> WC
-    UI4 --> WC
-    WC --> RT
-    WC --> SP
-    WC --> RG
-```
-
-### Smart Contracts
-
-| Contract | Purpose | Standard |
-|----------|---------|----------|
-| `LoyaltyRegistry.sol` | Stores brand metadata | Ownable |
-| `LoyaltyToken.sol` | ERC-1155 multi-token | ERC-1155 |
-| `SwapPool.sol` | AMM swap pool | Ownable |
-
-### Data Flow
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend
-    participant SmartContract
-    participant Blockchain
-    
-    Note over User,Blockchain: Mint Flow
-    User->>Frontend: Click "Mint Tokens"
-    Frontend->>SmartContract: mint(to, brandId, amount)
-    SmartContract->>Blockchain: Emit TokensMinted event
-    Blockchain-->>User: Tokens in wallet
-    
-    Note over User,Blockchain: Swap Flow
-    User->>Frontend: Select swap (A → B)
-    Frontend->>SmartContract: getAmountOut()
-    SmartContract-->>Frontend: Return quote
-    User->>Frontend: Confirm swap
-    Frontend->>SmartContract: swap(fromBrand, toBrand, amount, minOut)
-    SmartContract->>Blockchain: Transfer tokens
-    Blockchain-->>User: Updated balances
-    
-    Note over User,Blockchain: Redeem Flow
-    User->>Frontend: Enter amount to redeem
-    Frontend->>SmartContract: redeem(brandId, amount, rewardCode)
-    SmartContract->>Blockchain: Burn tokens + Emit Redeemed
-    Blockchain-->>Frontend: Show redemption code
-```
-
----
-
-## 🚀 Features
-
-### ✅ Implemented
-
-- [x] **Portfolio Dashboard** - View all brand token balances
-- [x] **Token Swap** - Cross-brand AMM swaps with live quotes
-- [x] **Token Redemption** - Burn tokens for redemption codes
-- [x] **Admin Panel** - Operator minting interface
-- [x] **Wallet Connection** - RainbowKit + MetaMask support
-- [x] **BSC Testnet** - Ready for testnet deployment
-
-### 📋 Roadmap
-
-- [ ] **Transaction History** - Live event feed
-- [ ] **Mobile Responsive** - Bottom tab navigation
-- [ ] **Swap Quote Preview** - Debounced live quotes
-- [ ] **Hardhat Tests** - Full test coverage
-- [ ] **BscScan Verification** - Verified contract explorer
-- [ ] **Mainnet Deployment** - BSC Mainnet ready
-
----
-
-## 🛠️ Tech Stack
-
-<div align="left">
-
-### Backend
-```
-Solidity     → Smart Contracts (0.8.25)
-Hardhat      → Development Framework
-OpenZeppelin → Security & Standards
-```
-
-### Frontend
-```
-Next.js 14   → React Framework
-wagmi v2     → Ethereum Interaction
-viem         → Low-level Ethereum
-RainbowKit   → Wallet UI
-TailwindCSS  → Styling
-TypeScript   → Type Safety
-```
-
-### Infrastructure
-```
-BNB Chain    → Blockchain (Testnet: 97)
-Vercel       → Frontend Hosting
-```
+[**Explore Demo**](https://loyalty-chain.vercel.app/) · [**Smart Contracts**](contracts/) · [**View Architecture**](#-architecture)
 
 </div>
 
 ---
 
-## 📁 Project Structure
+## 💎 Overview
 
-```
-loyaltychain/
-├── contracts/
-│   ├── LoyaltyRegistry.sol    # Brand metadata storage
-│   ├── LoyaltyToken.sol       # ERC-1155 multi-token
-│   └── SwapPool.sol          # AMM swap pool
-├── scripts/
-│   └── deploy.ts             # Deployment script
-├── frontend/
-│   ├── app/
-│   │   ├── layout.tsx        # Root layout
-│   │   ├── page.tsx         # Portfolio dashboard
-│   │   ├── swap/            # Swap interface
-│   │   ├── redeem/          # Redemption flow
-│   │   └── admin/           # Operator panel
-│   └── lib/
-│       ├── wagmiConfig.ts   # BSC config
-│       ├── contracts.ts     # ABIs
-│       └── mockBrands.ts   # Demo data
-├── hardhat.config.ts
-├── package.json
-└── README.md
-```
+LoyaltyChain is a decentralized protocol designed to solve the "Siloed Rewards" problem. By tokenizing 1:1 backed airline miles, hotel points, and retail rewards into **ERC-1155 Real-World Assets (RWAs)**, we enable a frictionless secondary market where users can swap, trade, and redeem points across different brands instantly.
+
+> [!IMPORTANT]
+> **Built for RWA Demo Day 2026**: This project demonstrates the power of BNB Chain for high-throughput, low-fee tokenization of traditional financial assets.
 
 ---
 
-## 🏃‍♂️ Quick Start
+## 📊 The $300B Liquidity Gap
+
+Current loyalty programs are fragmented, restrictive, and suffer from high breakage rates:
+
+| Pain Point | Traditional System | LoyaltyChain Solution |
+| :--- | :--- | :--- |
+| **Liquidity** | 0% (Points are locked) | **100% (Tradeable on AMMs)** |
+| **Expiry** | Silent & Unfair | **Transparent & On-chain** |
+| **Interoperability** | None | **Cross-brand Swaps (UniSwap Style)** |
+| **Redemption** | Opaque processes | **Atomic Burn-to-Redeem** |
+
+---
+
+## 🏗️ Architecture Deep Dive
+
+### High-Level System Design
+
+```mermaid
+graph TD
+    subgraph "Legacy Environment"
+        A[Brand Backend] -->|API| B[Oracle Relay]
+    end
+
+    subgraph "LoyaltyChain Core (BNB Chain)"
+        B -->|Authorize| C[LoyaltyRegistry]
+        C -->|Operator Access| D[LoyaltyToken ERC-1155]
+        D <--> E[SwapPool AMM]
+        D -->|Redeem/Burn| F[Redemption Engine]
+    end
+
+    subgraph "User Interface"
+        G[Connect Wallet] --> H[Portfolio Dashboard]
+        H --> I[Swap Interface]
+        H --> J[Redeem Portal]
+    end
+```
+
+### Core Components
+
+1.  **LoyaltyRegistry.sol**: A central directory for verified brands. It stores metadata, logos, and authorized operator addresses.
+2.  **LoyaltyToken.sol**: A multi-token standard (ERC-1155) where each `tokenId` represents a specific brand's points (e.g., Token 0 = Indigo Miles).
+3.  **SwapPool.sol**: A specialized AMM using a Constant Product formula modified to handle ERC-1155 assets, enabling instant cross-brand liquidity.
+
+---
+
+## 🚀 Key Features
+
+### 🌈 Premium Dashboard
+A high-end, glassmorphism-based interface built with **Next.js 14** and **Framer Motion**, offering a unified view of all tokenized assets.
+
+### 🔄 Cross-Brand Swaps
+Swap your hotel points for airline miles in a single transaction. Powered by an on-chain AMM with live price impact assessment.
+
+### 🛡️ Secure Redemption
+Uses an atomic "Burn-to-Redeem" mechanism. Tokens are verifiably destroyed on-chain in exchange for a unique off-chain claim code.
+
+---
+
+## 🛠️ Technical Stack
+
+-   **Blockchain**: BNB Chain (BSC Testnet)
+-   **Smart Contracts**: Solidity 0.8.25, Hardhat, OpenZeppelin
+-   **Frontend**: Next.js 14 (App Router), TailwindCSS, Framer Motion
+-   **Web3**: Wagmi v2, Viem, RainbowKit
+
+---
+
+## 🏃 Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
-- MetaMask wallet
 
-### Installation
+-   Node.js 18+ & npm/yarn
+-   MetaMask or any EIP-1193 wallet
+-   BSC Testnet BNB ([Faucet link](https://testnet.bnbchain.org/faucet-smart))
+
+### 1. Installation
 
 ```bash
-# Clone the repository
+# Clone and enter directory
 git clone https://github.com/Shikhyy/LoyaltyChain.git
 cd LoyaltyChain
 
-# Install root dependencies
+# Install all dependencies (Root + Frontend)
 npm install
-
-# Install frontend dependencies
 cd frontend && npm install && cd ..
 ```
 
-### Environment Setup
+### 2. Contract Deployment (Local/Testnet)
 
-Create `.env` in root:
+Create a `.env` in the root:
 ```env
-PRIVATE_KEY=your_wallet_private_key
-BSCSCAN_API_KEY=your_bscscan_api_key
+PRIVATE_KEY=your_private_key_here
+BSCSCAN_API_KEY=your_api_key_here
 ```
 
-Create `frontend/.env.local`:
+```bash
+# Compile contracts
+npx hardhat compile
+
+# Deploy to BSC Testnet
+npx hardhat run scripts/deploy.ts --network bscTestnet
+```
+
+### 3. Frontend Execution
+
+Update `frontend/.env.local` with the deployed addresses:
 ```env
-NEXT_PUBLIC_WALLETCONNECT_ID=your_walletconnect_project_id
 NEXT_PUBLIC_REGISTRY_ADDRESS=0x...
 NEXT_PUBLIC_TOKEN_ADDRESS=0x...
 NEXT_PUBLIC_SWAP_ADDRESS=0x...
 ```
-
-### Deploy Contracts
-
-```bash
-# Compile contracts
-npm run compile
-
-# Deploy to BSC Testnet
-npm run deploy -- --network bscTestnet
-```
-
-### Run Frontend
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Visit `http://localhost:3000`
+---
+
+## 🧪 Testing
+
+We value security. Our contracts are covered by a comprehensive test suite.
+
+```bash
+npx hardhat test
+```
+
+> [!TIP]
+> Run `npx hardhat coverage` to see detailed line-by-line coverage reports for the protocol.
 
 ---
 
-## 📱 Demo Brands
+## 🗺️ Roadmap
 
-| Brand | Symbol | Category | Points/Token |
-|-------|--------|----------|--------------|
-| IndiGo Miles | IGM | Airline | 100 |
-| Air India Points | AIP | Airline | 100 |
-| OYO Rewards | OYO | Hotel | 50 |
-| Taj InnerCircle | TAJ | Hotel | 50 |
-| Flipkart SuperCoins | FKC | Retail | 10 |
-| Tata Neu Points | NEU | Retail | 10 |
+- [x] ERC-1155 Tokenization Logic
+- [x] Basic AMM Swap Pool
+- [x] Premium Glassmorphism UI
+- [ ] **Multi-Asset Single Pool**: Trade any token for a stablecoin "Hub"
+- [ ] **Dynamic Pricing Oracles**: Real-time RWA value pegging
+- [ ] **Mobile App**: Native iOS/Android experience
 
 ---
 
-## 🔗 Contract Addresses (Testnet)
+## 🤝 Contributing
 
-_After deployment, addresses will be logged and should be added to `frontend/.env.local`_
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ---
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-## 👥 Team
-
-**LoyaltyChain** - RWA Demo Day Hackathon Submission
-
----
-
-## 🙏 Acknowledgments
-
-- [BNB Chain](https://www.bnbchain.org) - Blockchain Infrastructure
-- [OpenZeppelin](https://openzeppelin.com) - Smart Contract Standards
-- [wagmi](https://wagmi.sh) - Ethereum React Hooks
-- [RainbowKit](https://www.rainbowkit.com) - Wallet Connection UI
-- [DoraHacks](https://dorahacks.com) - Hackathon Platform
-
----
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 <div align="center">
+<br />
 
-**Built for RWA Demo Day · DoraHacks · March 2026**
+**Built with ❤️ on BNB Chain for RWA Demo Day 2026**
 
-![Stars](https://img.shields.io/github/stars/Shikhyy/LoyaltyChain?style=flat-square)
-![Forks](https://img.shields.io/github/forks/Shikhyy/LoyaltyChain?style=flat-square)
-![License](https://img.shields.io/github/license/Shikhyy/LoyaltyChain?style=flat-square)
+![Footer Icons](https://img.shields.io/badge/BNB%20Chain-EAECEF?style=for-the-badge&logo=binance&logoColor=F3BA2F)
+![Footer Icons](https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white)
+![Footer Icons](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
 
 </div>

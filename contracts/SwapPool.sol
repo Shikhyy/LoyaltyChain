@@ -23,6 +23,8 @@ contract SwapPool is Ownable {
 
     mapping(bytes32 => Pool) public pools;
 
+    address public feeRecipient;
+
     event PoolCreated(uint256 indexed brandA, uint256 indexed brandB, bytes32 poolKey);
     event LiquidityAdded(bytes32 indexed poolKey, uint256 amountA, uint256 amountB);
     event Swapped(
@@ -30,14 +32,23 @@ contract SwapPool is Ownable {
         uint256 indexed fromBrand,
         uint256 indexed toBrand,
         uint256 amountIn,
-        uint256 amountOut
+        uint256 amountOut,
+        uint256 feeAmount
     );
+    event FeeRecipientUpdated(address indexed newRecipient);
 
-    constructor(address tokenAddress, address registryAddress)
+    constructor(address tokenAddress, address registryAddress, address initialFeeRecipient)
         Ownable(msg.sender)
     {
         loyaltyToken = LoyaltyToken(tokenAddress);
         registry = LoyaltyRegistry(registryAddress);
+        feeRecipient = initialFeeRecipient;
+    }
+
+    function setFeeRecipient(address _feeRecipient) external onlyOwner {
+        require(_feeRecipient != address(0), "Invalid address");
+        feeRecipient = _feeRecipient;
+        emit FeeRecipientUpdated(_feeRecipient);
     }
 
     function poolKey(uint256 brandA, uint256 brandB) public pure returns (bytes32) {
@@ -133,7 +144,8 @@ contract SwapPool is Ownable {
 
         loyaltyToken.safeTransferFrom(address(this), msg.sender, toBrand, amountOut, "");
 
-        emit Swapped(msg.sender, fromBrand, toBrand, amountIn, amountOut);
+        uint256 feeAmount = (amountIn * FEE_BPS) / BPS;
+        emit Swapped(msg.sender, fromBrand, toBrand, amountIn, amountOut, feeAmount);
     }
 
     function onERC1155Received(

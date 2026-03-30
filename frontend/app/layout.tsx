@@ -2,55 +2,121 @@
 import "./globals.css";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { wagmiConfig } from "@/lib/wagmiConfig";
 import "@rainbow-me/rainbowkit/styles.css";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { LayoutDashboard, ArrowLeftRight, Ticket, ShieldCheck, Globe } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  const navItems = [
+    { name: "Portfolio", href: "/", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { name: "Swap", href: "/swap", icon: <ArrowLeftRight className="w-4 h-4" /> },
+    { name: "Redeem", href: "/redeem", icon: <Ticket className="w-4 h-4" /> },
+    { name: "Admin", href: "/admin", icon: <ShieldCheck className="w-4 h-4" /> },
+  ];
+
   return (
     <html lang="en">
-      <body className="bg-gray-50 min-h-screen pb-16 md:pb-0">
+      <body className="bg-[#0a0a0a] min-h-screen text-[#ededed] antialiased selection:bg-emerald-500/30">
+        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-900/20 via-[#0a0a0a] to-[#0a0a0a]" />
+        
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider>
-              <nav className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center font-bold text-sm">LC</div>
-                  <span className="font-semibold text-gray-900 hidden sm:inline">LoyaltyChain</span>
-                  <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full hidden sm:inline">BSC Testnet</span>
-                </div>
-                <div className="flex items-center gap-3 md:gap-6">
-                  <a href="/" className="text-sm text-gray-600 hover:text-gray-900 hidden md:inline">Portfolio</a>
-                  <a href="/swap" className="text-sm text-gray-600 hover:text-gray-900 hidden md:inline">Swap</a>
-                  <a href="/redeem" className="text-sm text-gray-600 hover:text-gray-900 hidden md:inline">Redeem</a>
-                  <a href="/admin" className="text-sm text-gray-600 hover:text-gray-900 hidden md:inline">Admin</a>
-                  <ConnectButton />
+            <RainbowKitProvider theme={darkTheme({
+              accentColor: '#10b981',
+              borderRadius: 'large',
+            })}>
+              <nav className="sticky top-0 z-50 w-full border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-xl">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex justify-between h-16 items-center">
+                    <Link href="/" className="flex items-center gap-2 group">
+                      <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-black transform group-hover:rotate-12 transition-transform shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                        LC
+                      </div>
+                      <span className="font-bold text-xl tracking-tight hidden sm:inline gradient-text">LoyaltyChain</span>
+                      <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium ml-2 uppercase tracking-wide">
+                        BSC Testnet
+                      </span>
+                    </Link>
+
+                    <div className="hidden md:flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
+                      {navItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                            pathname === item.href
+                              ? "bg-emerald-500 text-black shadow-lg shadow-emerald-500/20"
+                              : "text-gray-400 hover:text-white hover:bg-white/5"
+                          }`}
+                        >
+                          {item.icon}
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <ConnectButton showBalance={false} chainStatus="none" accountStatus="avatar" />
+                    </div>
+                  </div>
                 </div>
               </nav>
-              <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">{children}</main>
-              
-              <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-2 z-50">
-                <a href="/" className="flex flex-col items-center gap-1 text-xs text-gray-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                  Portfolio
-                </a>
-                <a href="/swap" className="flex flex-col items-center gap-1 text-xs text-gray-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                  </svg>
-                  Swap
-                </a>
-                <a href="/redeem" className="flex flex-col items-center gap-1 text-xs text-gray-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                  </svg>
-                  Redeem
-                </a>
+
+              <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={pathname}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    {children}
+                  </motion.div>
+                </AnimatePresence>
+              </main>
+
+              {/* Mobile Navigation */}
+              <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] z-50">
+                <div className="bg-[#1a1a1a]/80 backdrop-blur-2xl border border-white/10 rounded-2xl flex justify-around p-2 shadow-2xl">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
+                        pathname === item.href ? "text-emerald-400 bg-white/5" : "text-gray-500"
+                      }`}
+                    >
+                      {item.icon}
+                      <span className="text-[10px] font-medium">{item.name}</span>
+                    </Link>
+                  ))}
+                </div>
               </div>
+
+              <footer className="py-12 border-t border-white/5 mt-12 bg-black/40">
+                <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <span>&copy; 2026 LoyaltyChain Protocol</span>
+                    <span className="w-1 h-1 bg-gray-800 rounded-full" />
+                    <span>Built for RWA Demo Day</span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <a href="https://github.com/Shikhyy/LoyaltyChain" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+                      <Globe className="w-5 h-5" />
+                    </a>
+                  </div>
+                </div>
+              </footer>
             </RainbowKitProvider>
           </QueryClientProvider>
         </WagmiProvider>
@@ -58,5 +124,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-
-import { ConnectButton } from "@rainbow-me/rainbowkit";

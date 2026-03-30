@@ -17,7 +17,8 @@ async function main() {
   const SwapPool = await ethers.getContractFactory("SwapPool");
   const swapPool = await SwapPool.deploy(
     await token.getAddress(),
-    await registry.getAddress()
+    await registry.getAddress(),
+    deployer.address
   );
   await swapPool.waitForDeployment();
   console.log("SwapPool:", await swapPool.getAddress());

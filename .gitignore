@@ -12,3 +12,4 @@ out
 *.log
 .DS_Store
 coverage
+LOYALTY_RWA_BUILD.md

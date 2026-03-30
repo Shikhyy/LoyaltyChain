@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useWriteContract } from "wagmi";
+import { motion } from "framer-motion";
 import { ADDRESSES } from "@/lib/contracts";
 import { MOCK_BRANDS } from "@/lib/mockBrands";
+import { ShieldCheck, Plus, CheckCircle2, RefreshCw, AlertCircle } from "lucide-react";
 
 const MINT_ABI = [{
   name: "mint",
@@ -32,54 +34,158 @@ export default function AdminPage() {
     });
   }
 
-  return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-2">Operator Panel</h1>
-      <p className="text-gray-500 text-sm mb-6">Mint loyalty tokens to a user address. Only registered operators can mint their brand's tokens.</p>
+  const brand = MOCK_BRANDS[brandId];
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
-        <div>
-          <label className="text-xs text-gray-500 block mb-1">Recipient address</label>
-          <input
-            placeholder="0x..."
-            value={to}
-            onChange={e => setTo(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm font-mono"
-          />
+  return (
+    <div className="max-w-lg mx-auto pb-20">
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 bg-[#ff4000]/10 rounded-xl flex items-center justify-center">
+            <ShieldCheck className="w-6 h-6 text-[#ff4000]" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[#1a1a1a]">Operator Panel</h1>
+            <p className="text-xs text-[#999999] uppercase tracking-wide">Brand Token Management</p>
+          </div>
         </div>
-        <div>
-          <label className="text-xs text-gray-500 block mb-1">Brand</label>
-          <select
-            value={brandId}
-            onChange={e => setBrandId(Number(e.target.value))}
-            className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm"
-          >
-            {MOCK_BRANDS.map(b => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
+        <p className="text-[#666666] text-sm">
+          Mint loyalty tokens to a user address. Only registered operators can mint their brand's tokens.
+        </p>
+      </motion.div>
+
+      <motion.div 
+        className="card p-6 space-y-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-[#999999] block mb-2">Recipient Address</label>
+            <input
+              placeholder="0x..."
+              value={to}
+              onChange={e => setTo(e.target.value)}
+              className="input font-mono text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-[#999999] block mb-2">Brand</label>
+            <select
+              value={brandId}
+              onChange={e => setBrandId(Number(e.target.value))}
+              className="input"
+            >
+              {MOCK_BRANDS.map(b => (
+                <option key={b.id} value={b.id}>{b.name} ({b.symbol})</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-[#999999] block mb-2">Token Amount</label>
+            <div className="relative">
+              <input
+                type="number"
+                placeholder="e.g. 500"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                className="input pr-16"
+                style={{ fontSize: '16px' }}
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#999999]">
+                {brand.symbol}
+              </span>
+            </div>
+            {amount && (
+              <p className="text-xs text-[#ff4000] mt-2 font-medium">
+                = {(parseFloat(amount) * brand.pointsPerToken).toLocaleString()} real points
+              </p>
+            )}
+          </div>
         </div>
-        <div>
-          <label className="text-xs text-gray-500 block mb-1">Amount of tokens</label>
-          <input
-            type="number"
-            placeholder="e.g. 500"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm"
-          />
-        </div>
+
         {isSuccess && (
-          <p className="text-sm text-green-600 bg-green-50 rounded-lg px-3 py-2">Tokens minted successfully!</p>
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700"
+          >
+            <CheckCircle2 className="w-5 h-5 text-green-500" />
+            <span className="text-sm font-medium">Tokens minted successfully!</span>
+          </motion.div>
         )}
-        <button
+
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           onClick={handleMint}
           disabled={isPending || !to || !amount}
-          className="w-full py-3 bg-yellow-400 text-yellow-900 rounded-xl font-semibold text-sm hover:bg-yellow-500 disabled:opacity-40"
+          className="w-full py-4 btn-primary flex items-center justify-center gap-3 text-lg"
         >
-          {isPending ? "Minting…" : "Mint tokens"}
-        </button>
-      </div>
+          {isPending ? (
+            <>
+              <RefreshCw className="w-5 h-5 animate-spin" />
+              Minting…
+            </>
+          ) : (
+            <>
+              <Plus className="w-5 h-5" />
+              Mint Tokens
+            </>
+          )}
+        </motion.button>
+
+        <div className="flex items-start gap-3 p-4 bg-[#f4f3e5] rounded-xl border border-[#e8e6d9]">
+          <AlertCircle className="w-5 h-5 text-[#ff4000] flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-semibold text-[#1a1a1a] mb-1">Operator Access Required</p>
+            <p className="text-xs text-[#666666]">
+              Only the registered operator address for each brand can mint tokens. Contact support if you need access.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div 
+        className="mt-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <h3 className="text-sm font-bold text-[#1a1a1a] mb-4 flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-[#ff4000]" />
+          Registered Brands
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {MOCK_BRANDS.map((b, idx) => (
+            <motion.div
+              key={b.id}
+              className="card p-4 flex items-center gap-3"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 + idx * 0.05 }}
+              whileHover={{ y: -2 }}
+            >
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md"
+                style={{ backgroundColor: b.logo }}
+              >
+                {b.symbol}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-[#1a1a1a] truncate">{b.name}</p>
+                <p className="text-xs text-[#999999]">{b.pointsPerToken} pts/token</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }

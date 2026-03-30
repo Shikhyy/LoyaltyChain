@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount, useReadContract, useWatchContractEvent } from "wagmi";
 import { ADDRESSES, LOYALTY_TOKEN_ABI, SWAP_POOL_ABI } from "@/lib/contracts";
 import { MOCK_BRANDS } from "@/lib/mockBrands";
@@ -19,6 +19,11 @@ interface ActivityEvent {
 export default function Dashboard() {
   const { address, isConnected } = useAccount();
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { data: portfolio } = useReadContract({
     address: ADDRESSES.token,
@@ -85,7 +90,7 @@ export default function Dashboard() {
 
   const displayBrands = MOCK_BRANDS.map(b => ({
     ...b,
-    balance: portfolio ? Number(balances[b.id] ?? 0n) : Math.floor(Math.random() * 500 + 50),
+    balance: portfolio ? Number(balances[b.id] ?? 0n) : (mounted ? 0 : 0),
   }));
 
   const totalValueUSD = displayBrands.reduce((sum, b) => sum + b.balance * 0.01, 0);

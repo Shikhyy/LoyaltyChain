@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   ];
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen pb-20 md:pb-0">
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
